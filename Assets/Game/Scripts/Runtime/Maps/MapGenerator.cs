@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Core.Runtime.Base;
@@ -49,6 +48,8 @@ namespace Game.Runtime.Maps
             {
                 ReplaceObject(new Vector2Int(Random.Range(0, _mapSize.x), Random.Range(0, _mapSize.y)), MapObjectType.Grass);
             }
+
+            Utilities.GetDistanceMap(_mapSize);
         }
 
 
