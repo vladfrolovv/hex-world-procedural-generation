@@ -10,20 +10,19 @@ namespace Game.Runtime.UtilitiesContainer
     public static class PerlinUtilities
     {
 
-        public static float[,] GeneratePerlinNoiseMap(Vector2Int mapSize)
+        public static float[,] GeneratePerlinNoiseMap(Vector2Int mapSize, float scale)
         {
             float[,] map = new float[mapSize.x, mapSize.y];
             Vector2 perlinOffset = new Vector2(
                 Random.Range(0f, Mathf.Pow(2, 8)),
                 Random.Range(0f, Mathf.Pow(2, 8)));
 
-            float scale = Mathf.Max(mapSize.x, mapSize.y);
             for (int y = 0; y < mapSize.y; y++)
             {
                 for (int x = 0; x < mapSize.x; x++)
                 {
-                    float perlinX = (float)x / mapSize.x * scale + perlinOffset.x;
-                    float perlinY = (float)y / mapSize.y * scale + perlinOffset.y;
+                    float perlinX = ((float)x / mapSize.x + perlinOffset.x) * scale;
+                    float perlinY = ((float)y / mapSize.y + perlinOffset.y) * scale;
 
                     map[x, y] = Mathf.PerlinNoise(perlinX, perlinY);
                 }
@@ -34,9 +33,9 @@ namespace Game.Runtime.UtilitiesContainer
         }
 
 
-        public static float[,] GeneratePerlinRadialGradientMap(Vector2Int mapSize)
+        public static float[,] GeneratePerlinRadialGradientMap(Vector2Int mapSize, float perlinScale)
         {
-            float[,] perlinMap = GeneratePerlinNoiseMap(mapSize);
+            float[,] perlinMap = GeneratePerlinNoiseMap(mapSize, perlinScale);
             float[,] gradientMap = RadialGradientMap(mapSize).Normalize();
             float[,] map = new float[mapSize.x, mapSize.y];
 

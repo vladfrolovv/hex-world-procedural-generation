@@ -20,6 +20,8 @@ namespace Game.Runtime.Maps
         [SerializeField] private Vector2Int _mapSize;
         [Range(0f, 1f)]
         [SerializeField] private float _perlinInterpolator;
+        [Range(.01f, 25f)]
+        [SerializeField] private float _perlinScale;
 
         private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
             new Dictionary<Vector2Int, MapObject>();
@@ -47,7 +49,7 @@ namespace Game.Runtime.Maps
 
         private void CreateMap()
         {
-            float[,] combinedMap = PerlinUtilities.GeneratePerlinRadialGradientMap(_mapSize);
+            float[,] combinedMap = PerlinUtilities.GeneratePerlinRadialGradientMap(_mapSize, _perlinScale);
             float threshold = combinedMap.GetThreshold(_perlinInterpolator);
 
             for (int y = 0; y < _mapSize.y; y++)

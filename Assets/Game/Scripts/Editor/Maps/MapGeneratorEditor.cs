@@ -22,7 +22,12 @@ namespace Game.Editor.Maps
         {
             base.OnInspectorGUI();
 
-            GUILayout.Space(15);
+            // used to modify range
+            // EditorGUILayout.PropertyField(MapSize);
+            // PerlinScale.floatValue = Mathf.Min(MapSize.vector2IntValue.y, PerlinScale.floatValue);
+            // EditorGUILayout.Slider(PerlinScale, 0.01f, MapSize.vector2IntValue.y);
+
+            EditorGUILayout.Separator();
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Generate New"))
@@ -31,6 +36,8 @@ namespace Game.Editor.Maps
             }
 
             GUILayout.EndHorizontal();
+
+            serializedObject.ApplyModifiedProperties();
         }
     }
 }
