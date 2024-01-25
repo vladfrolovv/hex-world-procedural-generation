@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Core.Runtime.Base;
+using Game.Runtime.Cameras;
 using Game.Runtime.Maps.MapObjects;
 using Game.Runtime.UtilitiesContainer;
 using UnityEngine;
@@ -20,6 +21,7 @@ namespace Game.Runtime.Maps
 
         private MapObjectsConfig _mapObjectsConfig;
         private DiContainer _diContainer;
+        private CameraInstaller _cameraInstaller;
 
 
         [SerializeField] private Vector2Int _mapSize;
@@ -34,6 +36,14 @@ namespace Game.Runtime.Maps
         public void Generate()
         {
             ClearMap();
+            CreateMap();
+
+            _cameraInstaller.Install(_mapSize);
+        }
+
+
+        private void CreateMap()
+        {
             for (int y = 0; y < _mapSize.y; y++)
             {
                 for (int x = 0; x < _mapSize.x; x++)
@@ -89,10 +99,12 @@ namespace Game.Runtime.Maps
 
 
         [Inject]
-        public void Construct(MapObjectsConfig mapObjectsConfig, DiContainer diContainer)
+        public void Construct(MapObjectsConfig mapObjectsConfig, DiContainer diContainer,
+                              CameraInstaller cameraInstaller)
         {
             _mapObjectsConfig = mapObjectsConfig;
             _diContainer = diContainer;
+            _cameraInstaller = cameraInstaller;
         }
 
     }
