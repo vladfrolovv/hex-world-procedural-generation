@@ -565,7 +565,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7830e39fbd4493095fbee42961cb123, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _mapSize: {x: 25, y: 5}
+  _mapSize: {x: 25, y: 25}
   _perlinInterpolator: 0.5
   _perlinScale: 5
 --- !u!1 &1978108364

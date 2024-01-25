@@ -22,6 +22,7 @@ namespace Game.Runtime.Maps
         [SerializeField] private float _perlinInterpolator;
         [Range(.01f, 25f)]
         [SerializeField] private float _perlinScale;
+        [SerializeField] private bool _updateOnValidate;
 
         private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
             new Dictionary<Vector2Int, MapObject>();
@@ -34,6 +35,15 @@ namespace Game.Runtime.Maps
         protected void OnEnable()
         {
             Generate();
+        }
+
+
+        protected void OnValidate()
+        {
+            if (Application.isPlaying && _updateOnValidate)
+            {
+                Generate();
+            }
         }
 
 
