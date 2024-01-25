@@ -8,7 +8,6 @@ using Game.Runtime.Maps.MapObjects;
 using Game.Runtime.UtilitiesContainer;
 using UnityEngine;
 using Zenject;
-using Random = UnityEngine.Random;
 
 #endregion
 
@@ -16,15 +15,18 @@ namespace Game.Runtime.Maps
 {
     public class MapGenerator : BaseBehaviour
     {
-        private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
-            new Dictionary<Vector2Int, MapObject>();
-
-        private MapObjectsConfig _mapObjectsConfig;
-        private DiContainer _diContainer;
-        private CameraInstaller _cameraInstaller;
 
 
         [SerializeField] private Vector2Int _mapSize;
+        [Range(0f, 1f)]
+        [SerializeField] private float _perlinInterpolator;
+
+        private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
+            new Dictionary<Vector2Int, MapObject>();
+        private CameraInstaller _cameraInstaller;
+        private DiContainer _diContainer;
+
+        private MapObjectsConfig _mapObjectsConfig;
 
 
         protected void OnEnable()
@@ -37,6 +39,7 @@ namespace Game.Runtime.Maps
         {
             ClearMap();
             CreateMap();
+            GenerateWaterBorder();
 
             _cameraInstaller.Install(_mapSize);
         }
@@ -44,22 +47,39 @@ namespace Game.Runtime.Maps
 
         private void CreateMap()
         {
+            float[,] combinedMap = PerlinUtilities.GeneratePerlinRadialGradientMap(_mapSize);
+            float threshold = combinedMap.GetThreshold(_perlinInterpolator);
+
+            for (int y = 0; y < _mapSize.y; y++)
+            {
+                for (int x = 0; x < _mapSize.x; x++)
+                {
+                    if (combinedMap[x, y] < threshold) continue;
+                    AddObject(new Vector2Int(x, y), MapObjectType.Grass);
+                }
+            }
+
+        }
+
+
+        private void GenerateWaterBorder()
+        {
             for (int y = 0; y < _mapSize.y; y++)
             {
                 for (int x = 0; x < _mapSize.x; x++)
                 {
                     Vector2Int position = new Vector2Int(x, y);
-                    AddObject(position, MapObjectType.Water);
+                    if (!_mapObjects.ContainsKey(position)) continue;
+                    if (_mapObjects[position].Type != MapObjectType.Grass) continue;
+
+                    foreach (Vector2Int neighbor in MapUtilities.GetNeighbours(position))
+                    {
+                        if (_mapObjects.ContainsKey(neighbor)) continue;
+
+                        AddObject(neighbor, MapObjectType.Water);
+                    }
                 }
             }
-
-
-            for (int i = 0; i < _mapSize.x; i++)
-            {
-                ReplaceObject(new Vector2Int(Random.Range(0, _mapSize.x), Random.Range(0, _mapSize.y)), MapObjectType.Grass);
-            }
-
-            Utilities.GetDistanceMap(_mapSize);
         }
 
 
@@ -76,6 +96,7 @@ namespace Game.Runtime.Maps
 
             MapObject prefab = _mapObjectsConfig.GetObjectPrefab(objectType);
             MapObject mapObject = _diContainer.InstantiatePrefabForComponent<MapObject>(prefab, transform);
+            mapObject.Type = objectType;
 
             mapObject.transform.position = position.ToWorldPosition();
             _mapObjects.Add(position, mapObject);
@@ -106,6 +127,5 @@ namespace Game.Runtime.Maps
             _diContainer = diContainer;
             _cameraInstaller = cameraInstaller;
         }
-
     }
 }

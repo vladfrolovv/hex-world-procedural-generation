@@ -22,7 +22,7 @@ namespace Game.Editor.Maps
         {
             base.OnInspectorGUI();
 
-            GUILayout.Space(25);
+            GUILayout.Space(15);
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button("Generate New"))
