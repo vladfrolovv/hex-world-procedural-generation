@@ -100,7 +100,20 @@ namespace Game.Runtime.Maps
         private void DefineIslands()
         {
             bool[,] territory = MapUtilities.GetTerritory(_mapObjects, _mapSize, MapObjectType.Grass);
-            Island island = MapUtilities.GetIsland(territory, _mapSize, new Vector2Int(Mathf.FloorToInt(_mapSize.x / 2), Mathf.FloorToInt(_mapSize.y / 2)));
+            List<Island> islands = MapUtilities.GetIslands(territory, _mapSize);
+
+            for (int i = 0; i < islands.Count; i++)
+            {
+                islands[i].Tiles.ForEach(tile =>
+                {
+                    _mapObjects.TryGetValue(tile, out MapObject mapObject);
+
+                    if (mapObject != null)
+                    {
+                        mapObject.transform.position = tile.ToWorldPosition(i + 1);
+                    }
+                });
+            }
         }
 
 

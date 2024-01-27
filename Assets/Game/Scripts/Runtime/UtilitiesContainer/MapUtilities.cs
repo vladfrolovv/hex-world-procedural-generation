@@ -84,7 +84,10 @@ namespace Game.Runtime.UtilitiesContainer
                 for (int x = 0; x < size.x; x++)
                 {
                     if (!map[x, y]) continue;
+                    if (islands.Exists(i => i.Tiles.Contains(new Vector2Int(x, y)))) continue;
+
                     Island island = GetIsland(map, size, new Vector2Int(x, y));
+                    islands.Add(island);
                 }
             }
 
