@@ -1,6 +1,10 @@
 #region
 
+using System.Collections.Generic;
 using System.Linq;
+using Game.Runtime.Islands;
+using Game.Runtime.Maps;
+using Game.Runtime.Maps.MapObjects;
 using UnityEngine;
 
 #endregion
@@ -23,6 +27,21 @@ namespace Game.Runtime.UtilitiesContainer
             }
 
             return map;
+        }
+
+
+        public static T[,] EmptyMatrix<T>(Vector2Int size, T defaultValue)
+        {
+            T[,] matrix = new T[size.x, size.y];
+            for (int y = 0 ; y < size.y ; y++)
+            {
+                for (int x = 0 ; x < size.x ; x++)
+                {
+                    matrix[x, y] = defaultValue;
+                }
+            }
+
+            return matrix;
         }
 
 

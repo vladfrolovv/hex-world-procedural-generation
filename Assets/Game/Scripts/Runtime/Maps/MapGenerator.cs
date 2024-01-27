@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Runtime.Base;
 using Game.Runtime.Cameras;
+using Game.Runtime.Islands;
+using Game.Runtime.Logger;
 using Game.Runtime.Maps.MapObjects;
 using Game.Runtime.UtilitiesContainer;
 using UnityEngine;
@@ -15,7 +17,6 @@ namespace Game.Runtime.Maps
 {
     public class MapGenerator : BaseBehaviour
     {
-
 
         [SerializeField] private Vector2Int _mapSize;
         [Range(0f, 1f)]
@@ -52,6 +53,7 @@ namespace Game.Runtime.Maps
             ClearMap();
             CreateMap();
             GenerateWaterBorder();
+            DefineIslands();
 
             _cameraInstaller.Install(_mapSize);
         }
@@ -95,6 +97,13 @@ namespace Game.Runtime.Maps
         }
 
 
+        private void DefineIslands()
+        {
+            bool[,] territory = MapUtilities.GetTerritory(_mapObjects, _mapSize, MapObjectType.Grass);
+            Island island = MapUtilities.GetIsland(territory, _mapSize, new Vector2Int(Mathf.FloorToInt(_mapSize.x / 2), Mathf.FloorToInt(_mapSize.y / 2)));
+        }
+
+
         private void ClearMap()
         {
             _mapObjects.Values.ToList().ForEach(mapObject => Destroy(mapObject.gameObject));
@@ -102,7 +111,7 @@ namespace Game.Runtime.Maps
         }
 
 
-        private void AddObject(Vector2Int position, MapObjectType objectType)
+        private void AddObject(Vector2Int position, MapObjectType objectType, float yOffset = 0f)
         {
             if (_mapObjects.Keys.Contains(position)) return;
 
@@ -110,7 +119,7 @@ namespace Game.Runtime.Maps
             MapObject mapObject = _diContainer.InstantiatePrefabForComponent<MapObject>(prefab, transform);
             mapObject.Type = objectType;
 
-            mapObject.transform.position = position.ToWorldPosition();
+            mapObject.transform.position = position.ToWorldPosition(yOffset);
             _mapObjects.Add(position, mapObject);
         }
 

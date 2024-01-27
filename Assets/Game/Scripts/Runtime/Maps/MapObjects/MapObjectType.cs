@@ -4,5 +4,6 @@ namespace Game.Runtime.Maps.MapObjects
     {
         Water,
         Grass,
+        Road,
     }
 }

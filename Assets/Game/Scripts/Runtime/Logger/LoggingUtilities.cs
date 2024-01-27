@@ -91,16 +91,26 @@ namespace Game.Runtime.Logger
                 hexMatrix += "   ";
                 for (int x = 1; x < matrix.GetLength(0); x += 2)
                 {
-                    hexMatrix += matrix[y, x] + "     ";
+                    hexMatrix += ToChar(matrix[x, y]) + "     ";
                 }
                 hexMatrix += "\n";
                 for (int x = 0; x < matrix.GetLength(0); x += 2)
                 {
-                    hexMatrix += matrix[y, x] + "     ";
+                    hexMatrix += ToChar(matrix[x, y]) + "     ";
                 }
                 hexMatrix += "\n";
             }
             Debug.Log($"<color={ColorsConverter.GetColor(color)}>[{StackTraceConverter.GetCallerClassName()}]</color> {prefix} \n{hexMatrix}");
+        }
+
+
+        private static string ToChar<T>(T obj)
+        {
+            return obj switch
+            {
+                bool => (bool) (object) obj ? $"<color=red>1</color>" : "0",
+                _ => obj.ToString(),
+            };
         }
 
     }
