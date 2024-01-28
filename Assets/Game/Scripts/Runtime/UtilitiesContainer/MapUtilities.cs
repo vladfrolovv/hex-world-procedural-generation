@@ -1,5 +1,6 @@
 #region
 
+using System;
 using System.Collections.Generic;
 using Game.Runtime.Islands;
 using Game.Runtime.Maps;
@@ -29,7 +30,7 @@ namespace Game.Runtime.UtilitiesContainer
             return new Vector3(offsetX, z, offsetY);
         }
 
-        public static bool OutOfBounds(Vector2Int position, Vector2Int mapSize)
+        private static bool OutOfBounds(Vector2Int position, Vector2Int mapSize)
         {
             return !(position.x >= 0 && position.x < mapSize.x && position.y >= 0 && position.y < mapSize.y);
         }
@@ -43,7 +44,7 @@ namespace Game.Runtime.UtilitiesContainer
 
         public static Vector2Int[] GetNeighbours(int x, int y)
         {
-            return new Vector2Int[6]
+            return new[]
             {
                 new Vector2Int(x, y - 1),
                 new Vector2Int(x - 1, y - x % 2),
@@ -53,8 +54,6 @@ namespace Game.Runtime.UtilitiesContainer
                 new Vector2Int(x, y + 1)
             };
         }
-
-
 
 
         public static bool[,] GetTerritory(IReadOnlyDictionary<Vector2Int, MapObject> map, Vector2Int size, MapObjectType type)
@@ -95,7 +94,7 @@ namespace Game.Runtime.UtilitiesContainer
         }
 
 
-        public static Island GetIsland(bool[,] map, Vector2Int size, Vector2Int position)
+        private static Island GetIsland(bool[,] map, Vector2Int size, Vector2Int position)
         {
             bool[,] island = MathUtilities.EmptyMatrix(size, false);
             GetIslandStep(map, size, position, island);
@@ -124,38 +123,27 @@ namespace Game.Runtime.UtilitiesContainer
         }
 
 
-        private static IEnumerable<Vector2Int> ToList(this bool[,] map)
+        public static List<Vector2Int> GetIslandShore(IReadOnlyDictionary<Vector2Int, MapObject> map, Island island, Vector2Int size)
         {
-            (int height, int width) = GetMatrixDimensions(map);
-            List<Vector2Int> list = new List<Vector2Int>();
-            for (int y = 0; y < height; y++)
+            List<Vector2Int> shore = new List<Vector2Int>();
+
+            for (int i = 0; i < island.Tiles.Count; i++)
             {
-                for (int x = 0; x < width; x++)
+                Vector2Int tile = island.Tiles[i];
+                Vector2Int[] neighbours = GetNeighbours(tile);
+                foreach (Vector2Int neighbour in neighbours)
                 {
-                    if (map[x, y])
+                    if (OutOfBounds(neighbour, size) || !map.ContainsKey(neighbour) || island.Tiles.Contains(neighbour))
                     {
-                        list.Add(new Vector2Int(x, y));
+                        continue;
                     }
+
+                    shore.Add(tile);
+                    break;
                 }
             }
 
-            return list;
-        }
-
-
-        public static (int height, int width) GetMatrixDimensions<T>(T[,] matrix)
-        {
-            if (matrix == null)
-            {
-                return (0, 0);
-            }
-            int height = matrix.GetLength(0);
-            if (height <= 0)
-            {
-                return (0, 0);
-            }
-            int width = matrix.GetLength(1);
-            return (height, width);
+            return shore;
         }
 
     }

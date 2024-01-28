@@ -27,6 +27,9 @@ namespace Game.Runtime.Maps
 
         private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
             new Dictionary<Vector2Int, MapObject>();
+
+        private List<Island> _islands = new List<Island>();
+
         private CameraInstaller _cameraInstaller;
         private DiContainer _diContainer;
 
@@ -54,6 +57,7 @@ namespace Game.Runtime.Maps
             CreateMap();
             GenerateWaterBorder();
             DefineIslands();
+            GenerateRiver();
 
             _cameraInstaller.Install(_mapSize);
         }
@@ -100,20 +104,28 @@ namespace Game.Runtime.Maps
         private void DefineIslands()
         {
             bool[,] territory = MapUtilities.GetTerritory(_mapObjects, _mapSize, MapObjectType.Grass);
-            List<Island> islands = MapUtilities.GetIslands(territory, _mapSize);
+            _islands = MapUtilities.GetIslands(territory, _mapSize);
+            _islands = new List<Island>(_islands.OrderBy(island => island.Tiles.Count));
+        }
 
-            for (int i = 0; i < islands.Count; i++)
-            {
-                islands[i].Tiles.ForEach(tile =>
-                {
-                    _mapObjects.TryGetValue(tile, out MapObject mapObject);
 
-                    if (mapObject != null)
-                    {
-                        mapObject.transform.position = tile.ToWorldPosition(i + 1);
-                    }
-                });
-            }
+        private void GenerateRiver()
+        {
+            Island onIsland = _islands.LastOrDefault();
+            if (onIsland == null) return;
+
+            List<Vector2Int> shore = MapUtilities.GetIslandShore(_mapObjects, onIsland, _mapSize);
+            List<Vertex> vertices = NavigationUtilities.GetVertices(_mapObjects, shore);
+
+            shore = shore.OrderBy(s => Vector2Int.Distance(s, Vector2Int.zero)).ToList();
+            Vector2Int start = shore[0];
+            Vector2Int middle = _mapSize / 2;
+            Vector2Int goal = shore[^1];
+
+            List<Vector2Int> path1 = NavigationUtilities.GetPath(vertices, start, middle);
+            List<Vector2Int> path2 = NavigationUtilities.GetPath(vertices, middle, goal);
+            path1.ForEach(p => _mapObjects[p].transform.position = p.ToWorldPosition(1));
+            path2.ForEach(p => _mapObjects[p].transform.position = p.ToWorldPosition(1));
         }
 
 
@@ -121,6 +133,7 @@ namespace Game.Runtime.Maps
         {
             _mapObjects.Values.ToList().ForEach(mapObject => Destroy(mapObject.gameObject));
             _mapObjects.Clear();
+            _islands.Clear();
         }
 
 
