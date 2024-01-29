@@ -14,7 +14,7 @@ namespace Game.Runtime.UtilitiesContainer
     {
 
         private const float TileXOffset = 1f;
-        private const float TileYOffset = 0.9f;
+        private const float TileYOffset = 0.855f;
 
         public static Vector3 ToWorldPosition(this Vector2Int from, float z = 0f)
         {

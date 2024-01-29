@@ -57,7 +57,6 @@ namespace Game.Runtime.Maps
             ClearMap();
             CreateMap();
             GenerateWaterBorder();
-            DefineIslands();
             GenerateRiver();
 
             _cameraInstaller.Install(_mapSize);
@@ -79,6 +78,9 @@ namespace Game.Runtime.Maps
                 }
             }
 
+            _islands = new List<Island>(
+                MapUtilities.GetIslands(MapUtilities.GetTerritory(_mapObjects, _mapSize, MapObjectType.Grass), _mapSize)
+                    .OrderBy(island => island.Tiles.Count));
         }
 
 
@@ -101,14 +103,6 @@ namespace Game.Runtime.Maps
                     }
                 }
             }
-        }
-
-
-        private void DefineIslands()
-        {
-            bool[,] territory = MapUtilities.GetTerritory(_mapObjects, _mapSize, MapObjectType.Grass);
-            _islands = MapUtilities.GetIslands(territory, _mapSize);
-            _islands = new List<Island>(_islands.OrderBy(island => island.Tiles.Count));
         }
 
 
