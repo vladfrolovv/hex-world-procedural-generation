@@ -8,6 +8,7 @@ using Game.Runtime.Islands;
 using Game.Runtime.Logger;
 using Game.Runtime.Maps.MapObjects;
 using Game.Runtime.UtilitiesContainer;
+using UnityEditor;
 using UnityEngine;
 using Zenject;
 
@@ -72,8 +73,9 @@ namespace Game.Runtime.Maps
             {
                 for (int x = 0; x < _mapSize.x; x++)
                 {
-                    if (combinedMap[x, y] < threshold) continue;
-                    AddObject(new Vector2Int(x, y), MapObjectType.Grass);
+                    Vector2Int pos = new Vector2Int(x, y);
+                    if (combinedMap[pos.x, pos.y] < threshold) continue;
+                    AddObject(new Vector2Int(pos.x, pos.y), MapObjectType.Grass);
                 }
             }
 
@@ -87,12 +89,13 @@ namespace Game.Runtime.Maps
                 for (int x = 0; x < _mapSize.x; x++)
                 {
                     Vector2Int position = new Vector2Int(x, y);
-                    if (!_mapObjects.ContainsKey(position)) continue;
-                    if (_mapObjects[position].Type != MapObjectType.Grass) continue;
+                    _mapObjects.TryGetValue(position, out MapObject mapObject);
+                    if (mapObject == null || mapObject.Type != MapObjectType.Grass) continue;
 
                     foreach (Vector2Int neighbor in MapUtilities.GetNeighbours(position))
                     {
-                        if (_mapObjects.ContainsKey(neighbor)) continue;
+                        _mapObjects.TryGetValue(neighbor, out MapObject neighborObject);
+                        if (neighborObject != null && neighborObject.Type == MapObjectType.Grass) continue;
 
                         AddObject(neighbor, MapObjectType.Water);
                     }
@@ -116,16 +119,7 @@ namespace Game.Runtime.Maps
 
             List<Vector2Int> shore = MapUtilities.GetIslandShore(_mapObjects, onIsland, _mapSize);
             List<Vertex> vertices = NavigationUtilities.GetVertices(_mapObjects, shore);
-
-            shore = shore.OrderBy(s => Vector2Int.Distance(s, Vector2Int.zero)).ToList();
-            Vector2Int start = shore[0];
-            Vector2Int middle = _mapSize / 2;
-            Vector2Int goal = shore[^1];
-
-            List<Vector2Int> path1 = NavigationUtilities.GetPath(vertices, start, middle);
-            List<Vector2Int> path2 = NavigationUtilities.GetPath(vertices, middle, goal);
-            path1.ForEach(p => _mapObjects[p].transform.position = p.ToWorldPosition(1));
-            path2.ForEach(p => _mapObjects[p].transform.position = p.ToWorldPosition(1));
+            LoggingUtilities.Log($"Trying to generate river from shore [{shore.Count}] With vertices [{vertices.Count}]...");
         }
 
 

@@ -47,7 +47,6 @@ namespace Game.Runtime.UtilitiesContainer
                 }
             }
 
-            LoggingUtilities.LogMatrix("Combined map: ", map, LogColor.green);
             return map;
         }
 

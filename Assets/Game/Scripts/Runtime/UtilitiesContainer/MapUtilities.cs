@@ -1,6 +1,5 @@
 #region
 
-using System;
 using System.Collections.Generic;
 using Game.Runtime.Islands;
 using Game.Runtime.Maps;
@@ -14,20 +13,14 @@ namespace Game.Runtime.UtilitiesContainer
     public static class MapUtilities
     {
 
-        private const float HexRadius = .577f;
-        private const float CenterMultiplier = .865f;
+        private const float TileXOffset = 1f;
+        private const float TileYOffset = 0.9f;
 
-        public static Vector3 ToWorldPosition(this Vector2Int position, float z = 0f)
+        public static Vector3 ToWorldPosition(this Vector2Int from, float z = 0f)
         {
-            float offsetX = position.x * Mathf.Sqrt(3) * HexRadius;
-            float offsetY = position.y * 1.5f * HexRadius;
-
-            if (position.y % 2 != 0)
-            {
-                offsetX += HexRadius * CenterMultiplier;
-            }
-
-            return new Vector3(offsetX, z, offsetY);
+            return new Vector3(from.y % 2 == 0 ?
+                (from.x * TileXOffset) :
+                (from.x * TileXOffset + TileXOffset / 2f), z, from.y * TileYOffset);
         }
 
         private static bool OutOfBounds(Vector2Int position, Vector2Int mapSize)
@@ -38,20 +31,36 @@ namespace Game.Runtime.UtilitiesContainer
 
         public static Vector2Int[] GetNeighbours(Vector2Int position)
         {
-            return GetNeighbours(position.x, position.y);
+            return GetNeighbours(position.y, position.x);
         }
 
 
-        public static Vector2Int[] GetNeighbours(int x, int y)
+        private static Vector2Int[] GetNeighbours(int y, int x)
         {
+            bool isEvenCol = x % 2 == 0;
+            bool isEvenRow = y % 2 == 0;
+
+            if (isEvenRow)
+            {
+                return new[]
+                {
+                    new Vector2Int(x, y - 1), // 0
+                    new Vector2Int(x - 1, y - x % 2), // 1
+                    new Vector2Int(isEvenCol ? x + 1 : x - 1, isEvenCol ? y - x % 2 : y + 1), // 2
+                    new Vector2Int(x - 1, y + 1 - x % 2), // 3
+                    new Vector2Int(isEvenCol ? x - 1 : x + 1, isEvenCol ? y - 1 : y + 1 - x % 2), // 4
+                    new Vector2Int(x, y + 1) // 5
+                };
+            }
+
             return new[]
             {
-                new Vector2Int(x, y - 1),
-                new Vector2Int(x - 1, y - x % 2),
-                new Vector2Int(x + 1, y - x % 2),
-                new Vector2Int(x - 1, y + 1 - x % 2),
-                new Vector2Int(x + 1, y + 1 - x % 2),
-                new Vector2Int(x, y + 1)
+                new Vector2Int(x, y - 1), // 0
+                new Vector2Int(isEvenCol ? x - 1 : x + 1, isEvenCol ? y - x % 2 : y + 1), // 1
+                new Vector2Int(x + 1, y - x % 2), // 2
+                new Vector2Int(isEvenCol ? x + 1 : x - 1, isEvenCol ? y - 1 : y + 1 - x % 2), // 3
+                new Vector2Int(x + 1, y + 1 - x % 2), // 4
+                new Vector2Int(x, y + 1) // 5
             };
         }
 
