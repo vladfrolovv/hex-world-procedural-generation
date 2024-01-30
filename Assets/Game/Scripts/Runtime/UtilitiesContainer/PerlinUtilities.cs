@@ -1,6 +1,5 @@
 #region
 
-using Game.Runtime.Logger;
 using UnityEngine;
 
 #endregion
@@ -28,7 +27,6 @@ namespace Game.Runtime.UtilitiesContainer
                 }
             }
 
-            LoggingUtilities.LogMatrix("Perlin map: ", map, LogColor.green);
             return map;
         }
 
@@ -65,7 +63,6 @@ namespace Game.Runtime.UtilitiesContainer
                 }
             }
 
-            LoggingUtilities.LogMatrix("Gradient map: ", gradientMap, LogColor.green);
             return gradientMap;
         }
     }

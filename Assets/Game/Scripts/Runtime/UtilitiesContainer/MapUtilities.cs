@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Game.Runtime.Islands;
+using Game.Runtime.Logger;
 using Game.Runtime.Maps;
 using Game.Runtime.Maps.MapObjects;
 using UnityEngine;
@@ -100,6 +101,41 @@ namespace Game.Runtime.UtilitiesContainer
             }
 
             return islands;
+        }
+
+
+        public static float[,] DistanceMap(List<Vector2Int> territory, Vector2Int from, Vector2Int size)
+        {
+            float[,] distanceMap = MathUtilities.EmptyMatrix(size, -1f);
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int x = 0; x < size.x; x++)
+                {
+                    Vector2Int position = new Vector2Int(x, y);
+                    if (!territory.Contains(position)) continue;
+
+                    distanceMap[x, y] = Vector2Int.Distance(from, position);
+                }
+            }
+
+            return distanceMap;
+        }
+
+
+        public static Vector2Int LargestDistanceMapValue(this float[,] map, Vector2Int size)
+        {
+            Vector2Int maxValuePosition = Vector2Int.zero;
+            for (int y = 0; y < size.y; y++)
+            {
+                for (int x = 0; x < size.x; x++)
+                {
+                    if (map[x, y] < map[maxValuePosition.x, maxValuePosition.y]) continue;
+
+                    maxValuePosition = new Vector2Int(x, y);
+                }
+            }
+
+            return maxValuePosition;
         }
 
 

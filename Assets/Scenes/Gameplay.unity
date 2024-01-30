@@ -568,6 +568,7 @@ MonoBehaviour:
   _mapSize: {x: 30, y: 30}
   _perlinInterpolator: 0.5
   _perlinScale: 5
+  _riverInterpolator: 0.9
   _updateOnValidate: 0
 --- !u!1 &1978108364
 GameObject:

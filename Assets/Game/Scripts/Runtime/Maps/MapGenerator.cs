@@ -8,7 +8,6 @@ using Game.Runtime.Islands;
 using Game.Runtime.Logger;
 using Game.Runtime.Maps.MapObjects;
 using Game.Runtime.UtilitiesContainer;
-using UnityEditor;
 using UnityEngine;
 using Zenject;
 
@@ -19,17 +18,21 @@ namespace Game.Runtime.Maps
     public class MapGenerator : BaseBehaviour
     {
 
-        [SerializeField] private Vector2Int _mapSize;
+        [SerializeField] private Vector2Int _mapSize = new Vector2Int(25, 25);
         [Range(0f, 1f)]
-        [SerializeField] private float _perlinInterpolator;
+        [SerializeField] private float _perlinInterpolator = .5f;
         [Range(.01f, 25f)]
-        [SerializeField] private float _perlinScale;
+        [SerializeField] private float _perlinScale = 5f;
+        [Range(.01f, 1f)]
+        [SerializeField] private float _riverInterpolator = .9f;
         [SerializeField] private bool _updateOnValidate;
 
         private readonly Dictionary<Vector2Int, MapObject> _mapObjects =
             new Dictionary<Vector2Int, MapObject>();
 
         private List<Island> _islands = new List<Island>();
+
+        private float[,] _perlinMap;
 
         private CameraInstaller _cameraInstaller;
         private DiContainer _diContainer;
@@ -65,15 +68,15 @@ namespace Game.Runtime.Maps
 
         private void CreateMap()
         {
-            float[,] combinedMap = PerlinUtilities.GeneratePerlinRadialGradientMap(_mapSize, _perlinScale);
-            float threshold = combinedMap.GetThreshold(_perlinInterpolator);
+            _perlinMap = PerlinUtilities.GeneratePerlinRadialGradientMap(_mapSize, _perlinScale);
+            float threshold = _perlinMap.GetThreshold(_perlinInterpolator);
 
             for (int y = 0; y < _mapSize.y; y++)
             {
                 for (int x = 0; x < _mapSize.x; x++)
                 {
                     Vector2Int pos = new Vector2Int(x, y);
-                    if (combinedMap[pos.x, pos.y] < threshold) continue;
+                    if (_perlinMap[pos.x, pos.y] < threshold) continue;
                     AddObject(new Vector2Int(pos.x, pos.y), MapObjectType.Grass);
                 }
             }
@@ -109,11 +112,38 @@ namespace Game.Runtime.Maps
         private void GenerateRiver()
         {
             Island onIsland = _islands.LastOrDefault();
-            if (onIsland == null) return;
 
-            List<Vector2Int> shore = MapUtilities.GetIslandShore(_mapObjects, onIsland, _mapSize);
-            List<Vertex> vertices = NavigationUtilities.GetVertices(_mapObjects, shore);
-            LoggingUtilities.Log($"Trying to generate river from shore [{shore.Count}] With vertices [{vertices.Count}]...");
+            if (onIsland == null)
+            {
+                LoggingUtilities.Log("No islands found.", LogColor.red);
+                return;
+            }
+
+            List<Vector2Int> islandTiles = new List<Vector2Int>(onIsland.Tiles);
+            List<Vector2Int> shoreTiles = MapUtilities.GetIslandShore(_mapObjects, onIsland, _mapSize);
+
+            islandTiles.RemoveAll(tile => shoreTiles.Contains(tile));
+            Vector2Int? fromNullable = null;
+            while (fromNullable == null)
+            {
+                fromNullable = islandTiles[Random.Range(0, islandTiles.Count)];
+                List<Vector2Int> neighbours = MapUtilities.GetNeighbours((Vector2Int)fromNullable).ToList();
+                bool shoreNearby = neighbours.Any(n => shoreTiles.Contains(n));
+                if (!shoreNearby)
+                    fromNullable = null;
+            }
+
+            Vector2Int from = (Vector2Int)fromNullable;
+            Vector2Int to = MapUtilities.DistanceMap(islandTiles, from, _mapSize).LargestDistanceMapValue(_mapSize);
+            List<Vector2Int> path = NavigationUtilities.GetPath(NavigationUtilities.GetVertices(_mapObjects, onIsland.Tiles), from, to);
+            if (path.Count == 0)
+            {
+                LoggingUtilities.Log("No path found.", LogColor.red);
+                return;
+            }
+
+            LoggingUtilities.Log($"Trying to create river from {from}, {to}", LogColor.green);
+            path.ForEach(tile => _mapObjects[tile].transform.position = tile.ToWorldPosition(.1f));
         }
 
 
